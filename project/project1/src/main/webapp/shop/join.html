@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>쇼핑몰 회원가입 페이지</title>
+</head>
+<body>
+<form id="frm" method="post" action="./join_ok.do">
+<!-- 중복체크여부 저장 -->
+<input type="hidden" id="idck" value="">
+<p>[회원가입]</p>
+<div>
+<input type="radio" name="spart" value="P" checked="checked" onclick="frm_view(this.value)">일반회원
+<input type="radio" name="spart" value="C"  onclick="frm_view(this.value)">사업자회원
+<br><br>
+회원아이디<br>
+<input type="text" name="sid"> <input type="button" value="중복체크" onclick="idcheck()"><br>
+회원 패스워드<br>
+<input type="password" name="spw"><br>
+회원 이름 및 회사명<br>
+<input type="text" name="snm"><br>
+휴대폰번호 및 전화번호<br>
+<input type="text" name="stel" maxlength="11"><br>
+이메일 주소<br>
+<input type="text" name="semail"><br>
+<span id="corp" style="display:none">
+사업자 번호<br>
+<input type="text" name="sno" maxlength="13"> * "-" 없이 입력
+</span>
+<br><br><br>
+<input type="button" id="btn" value="회원가입" onclick="memberok()">
+</div>
+</form>
+</body>
+<script src="../jquery/jquery.js"></script>
+<script>
+function memberok(){
+	var reg_tel = /010[2-9]{1}[0-9]{7}/; //휴대폰번호 정규식 
+	var reg_email = /^[a-z0-9]([a-z0-9-_.])+\@[a-z0-9ㄱ-힇-_]+\.[a-z0-9ㄱ-힇]{2,}/i; //이메일 정규식 
+	if(frm.sid.value==""){
+		alert("아이디를 입력후 중복체크를 하세요.");
+		frm.sid.focus();
+	}
+	else if(document.getElementById("idck").value==""){
+		alert("아이디 중복체크를 하세요.");
+	}
+	else if(frm.spw.value==""){
+		alert("패스워드를 입력하세요.");
+		frm.spw.focus();
+	}
+	else if(frm.snm.value==""){
+		alert("이름 또는 회사명을 입력하세요.");
+		frm.snm.focus();
+	}
+	else if(frm.stel.value==""){
+		alert("전화번호를 입력하세요.");
+		frm.stel.focus();
+	}
+	else if(reg_tel.test(frm.stel.value)==false){
+		alert("휴대폰번호를 정확히 입력하세요.");
+		frm.stel.value=="";
+		frm.stel.focus();
+	}
+	else if(frm.semail.value==""){
+		alert("이메일주소를 입력하세요.");
+		frm.semail.focus();
+	}
+	else if(reg_email.test(frm.semail.value)==false){
+		alert("이메일 주소를 정확히 입력하세요.");
+		frm.semail.value=="";
+		frm.semail.focus();
+	}
+	else{
+		if(frm.spart.value=="P"){
+			frm.submit();
+		}
+		else{
+			if(frm.sno.value==""){
+				alert("사업자번호를 입려하세요.");
+				frm.sno.focus();
+			}
+			else{
+				frm.submit();
+			}
+		}
+	}
+	
+}
+
+//아이디 중복사항 체크
+function idcheck(){
+	if(frm.sid.value==""){
+		alert("아이디를 입력하세요.");
+	}
+	else{
+		ajaxpost(frm.sid.value); //Ajax를 이용하여 중복 체크
+	}
+}
+
+function ajaxpost(sid){
+	var ok = null; //백앤드에게 전달되는 XMLHttpRequest() 객체 변수 
+	if(window.XMLHttpRequest){ //브라우저가 XMLHttpRequest 객체를 지원하면
+		ok = new XMLHttpRequest();  // 0(UNSENT) : 객체 생성 
+	}
+	ok.onreadystatechange = function(){
+		//console.log(ok.readyState);
+		//console.log(ok.status);
+		if(ok.readyState==XMLHttpRequest.DONE && ok.status==200){ //4(DONE) : 백앤드에서 response 수신
+			//console.log(this.response);
+			if(this.response == "ok"){
+				alert("사용가능한 아이디입니다.");
+				document.getElementById("idck").value = "ok";
+				frm.sid.readOnly = true;
+			}
+			else if(this.response == "no"){
+				alert("해당 아이디는 이미 사용중입니다.");
+				frm.sid.value = "";
+				frm.sid.readOnly = false;
+				frm.sid.focus();
+				
+			}
+		}
+	}
+	ok.open("GET","./idcheck.do?sid="+sid,true); // 1(OPENED) : XHR통신 오픈 
+	ok.send(); 
+}
+
+function frm_view(part){
+	var corp = document.getElementById("corp");
+	if(part == "P"){
+		corp.style.display = "none";
+	}
+	else{
+		corp.style.display = "block";
+	}
+}
+
+</script>
+</html>
